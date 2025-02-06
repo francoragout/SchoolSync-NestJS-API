@@ -14,6 +14,8 @@ export class UserEntity implements User {
   @ApiProperty()
   email: string;
 
+  password: string;
+
   @ApiProperty({ required: false, nullable: true })
   emailVerified: Date | null;
 
