@@ -13,8 +13,8 @@ export class CreateNotificationDto {
   body: string;
 
   @IsBoolean()
-  @ApiProperty()
-  read: boolean;
+  @ApiProperty({ default: false })
+  read: boolean = false;
 
   @IsString()
   @IsNotEmpty()

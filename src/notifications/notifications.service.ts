@@ -16,7 +16,12 @@ export class NotificationsService {
   }
 
   findOne(id: string) {
-    return this.prisma.notification.findUnique({ where: { id } });
+    return this.prisma.notification.findUnique({
+      where: { id },
+      include: {
+        user: true,
+      },
+    });
   }
 
   update(id: string, updateNotificationDto: UpdateNotificationDto) {
