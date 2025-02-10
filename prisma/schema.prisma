@@ -31,7 +31,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  role Role
+  role Role 
   notifications Notification[]
  
   createdAt DateTime @default(now())

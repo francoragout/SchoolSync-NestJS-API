@@ -7,6 +7,8 @@ import {
   IsEmail,
   IsOptional,
 } from 'class-validator';
+import { Role } from '@prisma/client';
+
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
@@ -21,6 +23,10 @@ export class CreateUserDto {
   @MaxLength(20)
   @ApiProperty()
   lastName: string;
+
+  @IsNotEmpty()
+  @ApiProperty({ enum: Role })
+  role: Role;
 
   @IsEmail()
   @IsNotEmpty()
