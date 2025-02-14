@@ -12,11 +12,22 @@ export class UsersService {
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      include: {
+        classrooms: true,
+        notifications: true,
+      },
+    });
   }
 
   findOne(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        classrooms: true,
+        notifications: true,
+      },
+    });
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
@@ -28,5 +39,9 @@ export class UsersService {
 
   remove(id: string) {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  removeMultiple(ids: string[]) {
+    return this.prisma.user.deleteMany({ where: { id: { in: ids } } });
   }
 }

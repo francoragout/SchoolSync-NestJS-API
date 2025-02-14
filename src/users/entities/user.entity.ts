@@ -24,6 +24,9 @@ export class UserEntity implements User {
 
   @Exclude()
   password: string;
+  
+  @ApiProperty({ required: false, nullable: true })
+  phone: string | null;
 
   @ApiProperty({ required: false, nullable: true })
   emailVerified: Date | null;

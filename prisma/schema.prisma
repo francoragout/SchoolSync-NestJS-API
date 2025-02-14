@@ -13,31 +13,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  PRECEPTOR
-  PROFESSOR
-  TUTOR  
-}
-
 model User {
   id            String          @id @default(cuid())
   firstName     String
   lastName      String
   email         String          @unique
   password      String?
+  phone         String?
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-
-  role Role 
+  role          Role
   notifications Notification[]
- 
+  classrooms    Classroom[]
+  students      UserOnStudent[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -50,43 +45,116 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
 
+model Classroom {
+  id        String    @id @default(cuid())
+  grade     Grade
+  division  Division
+  shift     Shift
+  students  Student[]
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    String?
+  updatedAt DateTime  @updatedAt
+
+  @@unique([grade, division, shift])
+}
+
+model Student {
+  id          String          @id @default(cuid())
+  firstName   String
+  lastName    String
+  attendance  Attendance[]
+  classroom   Classroom       @relation(fields: [classroomId], references: [id])
+  classroomId String
+  users       UserOnStudent[]
+}
+
+model UserOnStudent {
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@id([userId, studentId])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    Status
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  @@unique([createdAt, studentId])
+}
+
 model Notification {
-  id String @id @default(cuid())
-  userId String
-  title String
-  body String
-  read Boolean @default(false)
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum Grade {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+  FIFTH
+  SIXTH
+}
 
+enum Role {
+  ADMIN
+  PRECEPTOR
+  PROFESSOR
+  TUTOR
+}
+
+enum Division {
+  A
+  B
+  C
+  D
+}
+
+enum Shift {
+  MORNING
+  AFTERNOON
+}
+
+enum Status {
+  ABSENT
+  LATE
+}
