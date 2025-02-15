@@ -60,7 +60,7 @@ export class UsersController {
   @ApiOkResponse({ type: UserEntity, isArray: true })
   async removeMultiple(@Body() removeMultipleUsersDto: RemoveMultipleUsersDto) {
     const { ids } = removeMultipleUsersDto;
-    await this.usersService.removeMultiple(ids);
-    return ids.map((id) => ({ id }));
+    const deletedUsers = await this.usersService.removeMultiple(ids);
+    return deletedUsers.count;
   }
 }
