@@ -101,12 +101,12 @@ model UserOnStudent {
 
 model Attendance {
   id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  date      DateTime
   status    Status
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
 
-  @@unique([createdAt, studentId])
+  @@unique([date, studentId])
 }
 
 model Notification {
@@ -116,7 +116,6 @@ model Notification {
   body      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -151,5 +150,6 @@ enum Shift {
 
 enum Status {
   ABSENT
-  LATE
+  TARDY
+  JUSTIFIED
 }
