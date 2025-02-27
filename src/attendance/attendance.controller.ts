@@ -13,6 +13,7 @@ import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AttendanceEntity } from './entities/attendance.entity';
 import { CreateMultipleAttendanceDto } from './dto/create-multiple-attendance.dto';
+import { RemoveMultipleAttendanceDto } from './dto/remove-multiple-attendance.dto';
 
 @Controller('attendance')
 @ApiTags('attendance')
@@ -27,7 +28,9 @@ export class AttendanceController {
 
   @Post('multiple')
   @ApiCreatedResponse({ type: CreateMultipleAttendanceDto })
-  createMultiple(@Body() createMultipleAttendanceDto: CreateMultipleAttendanceDto) {
+  createMultiple(
+    @Body() createMultipleAttendanceDto: CreateMultipleAttendanceDto,
+  ) {
     return this.attendanceService.createMultiple(createMultipleAttendanceDto);
   }
 
@@ -66,5 +69,15 @@ export class AttendanceController {
   @ApiOkResponse({ type: CreateAttendanceDto })
   async remove(@Param('id') id: string) {
     return new AttendanceEntity(await this.attendanceService.remove(id));
+  }
+
+  @Delete()
+  @ApiOkResponse({ type: CreateAttendanceDto, isArray: true })
+  async removeMultiple(
+    @Body() removeMultipleAttendanceDto: RemoveMultipleAttendanceDto,
+  ) {
+    const { ids } = removeMultipleAttendanceDto;
+    const deletedAttendance = await this.attendanceService.removeMultiple(ids);
+    return deletedAttendance.count;
   }
 }

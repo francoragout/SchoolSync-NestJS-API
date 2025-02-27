@@ -12,6 +12,7 @@ import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ClassroomEntity } from './entities/classroom.entity';
+import { RemoveMultipleClassroomsDto } from './dto/remove-multiple-classrooms.dto';
 
 @Controller('classrooms')
 @ApiTags('classrooms')
@@ -54,5 +55,15 @@ export class ClassroomsController {
   @ApiOkResponse({ type: CreateClassroomDto })
   async remove(@Param('id') id: string) {
     return new ClassroomEntity(await this.classroomsService.remove(id));
+  }
+
+  @Delete()
+  @ApiOkResponse({ type: CreateClassroomDto, isArray: true })
+  async removeMultiple(
+    @Body() removeMultipleClassroomsDto: RemoveMultipleClassroomsDto,
+  ) {
+    const { ids } = removeMultipleClassroomsDto;
+    const deletedClassrooms = await this.classroomsService.removeMultiple(ids);
+    return deletedClassrooms.count;
   }
 }

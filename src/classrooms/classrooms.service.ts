@@ -45,7 +45,7 @@ export class ClassroomsService {
     const { grade, division, shift } = updateClassroomDto;
 
     const existingClassroom = await this.prisma.classroom.findFirst({
-      where: { grade, division, shift },
+      where: { grade, division, shift, NOT: { id } },
     });
 
     if (existingClassroom) {
@@ -63,5 +63,9 @@ export class ClassroomsService {
 
   remove(id: string) {
     return this.prisma.classroom.delete({ where: { id } });
+  }
+
+  removeMultiple(ids: string[]) {
+    return this.prisma.classroom.deleteMany({ where: { id: { in: ids } } });
   }
 }

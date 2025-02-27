@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,15 +7,34 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
+    const { email } = createUserDto;
+
+    const existingEmail = await this.prisma.user.findFirst({
+      where: { email },
+    });
+
+    if (existingEmail) {
+      throw new ConflictException({
+        status: 'exists',
+        message: 'Ya existe un usuario con el mismo email',
+      });
+    }
+
     return this.prisma.user.create({ data: createUserDto });
   }
 
   findAll() {
     return this.prisma.user.findMany({
       include: {
-        classrooms: true,
-        notifications: true,
+        classrooms: {
+          select: {
+            id: true,
+            grade: true,
+            division: true,
+            shift: true,
+          },
+        },
       },
     });
   }
@@ -30,7 +49,19 @@ export class UsersService {
     });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const { email } = updateUserDto;
+    const existingEmail = await this.prisma.user.findFirst({
+      where: { email, NOT: { id } },
+    });
+
+    if (existingEmail) {
+      throw new ConflictException({
+        status: 'exists',
+        message: 'Ya existe un usuario con el mismo email',
+      });
+    }
+
     return this.prisma.user.update({
       where: { id },
       data: updateUserDto,

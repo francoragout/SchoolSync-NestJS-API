@@ -12,6 +12,16 @@ export class AttendanceService {
     return this.prisma.attendance.create({ data: createAttendanceDto });
   }
 
+  createMultiple(createMultipleAttendanceDto: CreateMultipleAttendanceDto) {
+    const { ids, status } = createMultipleAttendanceDto;
+    const attendances = ids.map((id) => ({
+      studentId: id,
+      status,
+      date: new Date(),
+    }));
+    return this.prisma.attendance.createMany({ data: attendances });
+  }
+
   findAll() {
     return this.prisma.attendance.findMany();
   }
@@ -39,13 +49,7 @@ export class AttendanceService {
     return this.prisma.attendance.delete({ where: { id } });
   }
 
-  async createMultiple(createMultipleAttendanceDto: CreateMultipleAttendanceDto) {
-    const { ids, status } = createMultipleAttendanceDto;
-    const attendances = ids.map(id => ({
-      studentId: id,
-      status,
-      date: new Date(),
-    }));
-    return this.prisma.attendance.createMany({ data: attendances });
+  removeMultiple(ids: string[]) {
+    return this.prisma.attendance.deleteMany({ where: { id: { in: ids } } });
   }
 }

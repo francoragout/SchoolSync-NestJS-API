@@ -12,12 +12,19 @@ export class StudentsService {
   }
 
   findAll() {
-    return this.prisma.student.findMany();
+    return this.prisma.student.findMany({
+      include: {
+        attendance: true,
+      },
+    });
   }
 
   findByClassroomId(classroomId: string) {
     return this.prisma.student.findMany({
       where: { classroomId: classroomId },
+      include: {
+        attendance: true,
+      },
     });
   }
 
@@ -39,5 +46,9 @@ export class StudentsService {
 
   remove(id: string) {
     return this.prisma.student.delete({ where: { id } });
+  }
+
+  removeMultiple(ids: string[]) {
+    return this.prisma.student.deleteMany({ where: { id: { in: ids } } });
   }
 }

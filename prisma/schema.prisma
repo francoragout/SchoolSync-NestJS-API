@@ -85,7 +85,7 @@ model Student {
   lastName    String
   image       String?
   attendance  Attendance[]
-  classroom   Classroom       @relation(fields: [classroomId], references: [id])
+  classroom   Classroom       @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   classroomId String
   users       UserOnStudent[]
 }

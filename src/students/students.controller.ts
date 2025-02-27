@@ -12,6 +12,7 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { StudentEntity } from './entities/student.entity';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { RemoveMultipleStudentsDto } from './dto/remove-multiple-students.dto';
 
 @Controller('students')
 @ApiTags('students')
@@ -61,5 +62,15 @@ export class StudentsController {
   @ApiOkResponse({ type: CreateStudentDto })
   async remove(@Param('id') id: string) {
     return new StudentEntity(await this.studentsService.remove(id));
+  }
+
+  @Delete()
+  @ApiOkResponse({ type: CreateStudentDto, isArray: true })
+  async removeMultiple(
+    @Body() removeMultipleStudentDto: RemoveMultipleStudentsDto,
+  ) {
+    const { ids } = removeMultipleStudentDto;
+    const deleteStudents = await this.studentsService.removeMultiple(ids);
+    return deleteStudents.count;
   }
 }

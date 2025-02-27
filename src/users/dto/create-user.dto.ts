@@ -24,6 +24,11 @@ export class CreateUserDto {
   @ApiProperty()
   lastName: string;
 
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  phone: string;
+
   @IsNotEmpty()
   @ApiProperty({ enum: Role })
   role: Role;

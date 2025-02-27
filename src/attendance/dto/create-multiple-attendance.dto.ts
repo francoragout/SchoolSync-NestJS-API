@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@prisma/client';
-import { IsArray, IsDate, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsString } from 'class-validator';
 
 export class CreateMultipleAttendanceDto {
   @IsArray()
@@ -12,7 +12,7 @@ export class CreateMultipleAttendanceDto {
   @ApiProperty()
   status: Status;
 
-  @IsDate()
+  @IsDateString()
   @ApiProperty()
   date: Date;
 }
