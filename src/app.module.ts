@@ -4,8 +4,16 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
 import { StudentsModule } from './students/students.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
-  imports: [UsersModule, NotificationsModule, ClassroomsModule, StudentsModule, AttendanceModule],
+  imports: [
+    UsersModule,
+    NotificationsModule,
+    ClassroomsModule,
+    StudentsModule,
+    AttendanceModule,
+    AuthModule,
+  ],
   controllers: [],
   providers: [],
 })

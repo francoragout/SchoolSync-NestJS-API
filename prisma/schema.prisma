@@ -83,6 +83,7 @@ model Student {
   id          String          @id @default(cuid())
   firstName   String
   lastName    String
+  dni         String          @unique
   image       String?
   attendance  Attendance[]
   classroom   Classroom       @relation(fields: [classroomId], references: [id], onDelete: Cascade)

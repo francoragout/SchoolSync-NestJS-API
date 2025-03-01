@@ -47,6 +47,12 @@ export class StudentsController {
     return new StudentEntity(await this.studentsService.findOne(id));
   }
 
+  @Get('dni/:dni')
+  @ApiOkResponse({ type: CreateStudentDto })
+  async findOneByDni(@Param('dni') dni: string) {
+    return new StudentEntity(await this.studentsService.findOneByDni(dni));
+  }
+
   @Patch(':id')
   @ApiCreatedResponse({ type: CreateStudentDto })
   async update(

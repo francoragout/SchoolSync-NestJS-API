@@ -32,7 +32,18 @@ export class StudentsService {
     return this.prisma.student.findUnique({
       where: { id },
       include: {
-        users: true,
+        attendance: true,
+        classroom: true,
+      },
+    });
+  }
+
+  findOneByDni(dni: string) {
+    return this.prisma.student.findFirst({
+      where: { dni },
+      include: {
+        attendance: true,
+        classroom: true,
       },
     });
   }
