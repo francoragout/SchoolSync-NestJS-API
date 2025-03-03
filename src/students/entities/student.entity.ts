@@ -13,9 +13,6 @@ export class StudentEntity implements Student {
   lastName: string;
 
   @ApiProperty()
-  dni: string;
-
-  @ApiProperty()
   image: string;
 
   @ApiProperty()

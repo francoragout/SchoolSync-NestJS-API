@@ -13,11 +13,6 @@ export class CreateStudentDto {
   lastName: string;
 
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  dni: string;
-
-  @IsString()
   @IsOptional()
   @ApiProperty({ required: false, nullable: true })
   image: string | null;
