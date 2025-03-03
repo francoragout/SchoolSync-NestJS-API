@@ -52,7 +52,7 @@ export class StudentsService {
 
   findOneByDni(dni: string) {
     return this.prisma.student.findUnique({
-      where: { dni },
+      where: { dni: dni },
       include: {
         attendance: true,
         classroom: true,
