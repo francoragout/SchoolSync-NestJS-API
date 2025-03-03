@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,6 +8,18 @@ export class StudentsService {
   constructor(private prisma: PrismaService) {}
 
   create(createStudentDto: CreateStudentDto) {
+    const { dni } = createStudentDto;
+    const existingDni = this.prisma.student.findFirst({
+      where: { dni },
+    });
+
+    if (existingDni) {
+      throw new ConflictException({
+        status: 'exists',
+        message: 'Ya existe un estudiante con el mismo DNI',
+      });
+    }
+
     return this.prisma.student.create({ data: createStudentDto });
   }
 
