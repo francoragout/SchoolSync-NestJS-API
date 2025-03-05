@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Role } from '@prisma/client';
 
-export class CreateUserDto {
+export class CreateUserOnStudentDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
@@ -37,4 +37,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty()
   email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  studentId: string;
 }

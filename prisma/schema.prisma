@@ -11,20 +11,18 @@ model User {
   id            String          @id @default(cuid())
   firstName     String
   lastName      String
+  name          String?
   email         String          @unique
-  password      String?
   phone         String?
   emailVerified DateTime?
   image         String?
-  accounts      Account[]
-  sessions      Session[]
   role          Role
-  notifications Notification[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  accounts      Account[]
   classrooms    Classroom[]
+  notifications Notification[]
   students      UserOnStudent[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -39,23 +37,11 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
-}
-
-model Session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -71,10 +57,10 @@ model Classroom {
   grade     Grade
   division  Division
   shift     Shift
-  students  Student[]
-  user      User?     @relation(fields: [userId], references: [id])
   userId    String?
   updatedAt DateTime  @updatedAt
+  user      User?     @relation(fields: [userId], references: [id])
+  students  Student[]
 
   @@unique([grade, division, shift])
 }
@@ -84,17 +70,17 @@ model Student {
   firstName   String
   lastName    String
   image       String?
+  classroomId String
   attendance  Attendance[]
   classroom   Classroom       @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  classroomId String
   users       UserOnStudent[]
 }
 
 model UserOnStudent {
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, studentId])
 }
@@ -103,8 +89,8 @@ model Attendance {
   id        String   @id @default(cuid())
   date      DateTime
   status    Status
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([date, studentId])
 }
@@ -116,8 +102,7 @@ model Notification {
   body      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Grade {

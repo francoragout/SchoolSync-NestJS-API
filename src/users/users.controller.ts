@@ -14,6 +14,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { RemoveMultipleUsersDto } from './dto/remove-multiple-users.dto';
+import { CreateUserOnStudentDto } from './dto/create-user-on-student.dto';
+import { UserOnStudentEntity } from './entities/user-on-student.entity';
+import { RemoveUserOnStudentDto } from './dto/remove-user-on-student.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -24,6 +27,17 @@ export class UsersController {
   @ApiCreatedResponse({ type: UserEntity })
   async create(@Body() createUserDto: CreateUserDto) {
     return new UserEntity(await this.usersService.create(createUserDto));
+  }
+
+  @Post('student')
+  @ApiCreatedResponse({ type: UserOnStudentEntity })
+  async createUserOnStudent(
+    @Body() createUserOnStudentDto: CreateUserOnStudentDto,
+  ) {
+    const userOnStudent = await this.usersService.createUserOnStudent(
+      createUserOnStudentDto,
+    );
+    return new UserOnStudentEntity(userOnStudent);
   }
 
   @Get()
@@ -44,16 +58,27 @@ export class UsersController {
     return user;
   }
 
+  @Get('student/:id')
+  @ApiOkResponse({ type: UserOnStudentEntity })
+  async findByStudentId(@Param('id') id: string) {
+    const userOnStudent = await this.usersService.findByStudentId(id);
+    return userOnStudent;
+  }
+
   @Patch(':id')
   @ApiOkResponse({ type: UserEntity })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return new UserEntity(await this.usersService.update(id, updateUserDto));
   }
 
-  @Delete(':id')
-  @ApiOkResponse({ type: UserEntity })
-  async remove(@Param('id') id: string) {
-    return new UserEntity(await this.usersService.remove(id));
+  @Delete('student')
+  @ApiOkResponse({ type: UserOnStudentEntity, isArray: true })
+  async removeMultipleUserOnStudent(
+    @Body() removeUserOnStudentDto: RemoveUserOnStudentDto,
+  ) {
+    const { ids, studentId } = removeUserOnStudentDto;
+    const result = await this.usersService.removeUserOnStudent(ids, studentId);
+    return { count: result.count };
   }
 
   @Delete()
