@@ -47,6 +47,13 @@ export class StudentsController {
     return new StudentEntity(await this.studentsService.findOne(id));
   }
 
+  @Get('user/:userId')
+  @ApiOkResponse({ type: CreateStudentDto, isArray: true })
+  async findByUserId(@Param('userId') userId: string) {
+    const userOnStudent = await this.studentsService.findByUserId(userId);
+    return userOnStudent.map((user) => new StudentEntity(user.student));
+  }
+
   @Patch(':id')
   @ApiCreatedResponse({ type: CreateStudentDto })
   async update(

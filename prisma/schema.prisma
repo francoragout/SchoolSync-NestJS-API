@@ -61,6 +61,7 @@ model Classroom {
   updatedAt DateTime  @updatedAt
   user      User?     @relation(fields: [userId], references: [id])
   students  Student[]
+  exams     Exam[]
 
   @@unique([grade, division, shift])
 }
@@ -93,6 +94,16 @@ model Attendance {
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([date, studentId])
+}
+
+model Exam {
+  id          String    @id @default(cuid())
+  subject     Subjet
+  date        DateTime
+  time        String?
+  note        String?
+  classroomId String
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -137,4 +148,17 @@ enum Status {
   ABSENT
   TARDY
   JUSTIFIED
+}
+
+enum Subjet {
+  MATH
+  LITERATURE
+  HISTORY
+  GEOGRAPHY
+  BIOLOGY
+  PHYSICS
+  CHEMISTRY
+  ENGLISH
+  PHYSICAL_EDUCATION
+  RELIGION
 }

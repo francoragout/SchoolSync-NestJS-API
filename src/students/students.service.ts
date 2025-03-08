@@ -38,6 +38,20 @@ export class StudentsService {
     });
   }
 
+  findByUserId(userId: string) {
+    return this.prisma.userOnStudent.findMany({
+      where: { userId: userId },
+      include: {
+        student: {
+          include: {
+            classroom: true, // Esto incluirá todos los detalles de la clase
+          },
+        },
+      },
+    });
+  }
+  
+
   update(id: string, updateStudentDto: UpdateStudentDto) {
     return this.prisma.student.update({
       where: { id },
