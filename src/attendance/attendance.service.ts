@@ -12,13 +12,42 @@ export class AttendanceService {
     return this.prisma.attendance.create({ data: createAttendanceDto });
   }
 
-  createMultiple(createMultipleAttendanceDto: CreateMultipleAttendanceDto) {
+  async createMultiple(
+    createMultipleAttendanceDto: CreateMultipleAttendanceDto,
+  ) {
     const { ids, status } = createMultipleAttendanceDto;
     const attendances = ids.map((id) => ({
       studentId: id,
       status,
       date: new Date(),
     }));
+
+    const date = new Date().toLocaleDateString();
+
+    for (const id of ids) {
+      const userOnStudent = await this.prisma.userOnStudent.findMany({
+        where: { studentId: id },
+        include: { student: true },
+      });
+
+      const statusTranslations = {
+        TARDY: 'Tarde',
+        ABSENT: 'Ausente',
+        JUSTIFIED: 'Justificado',
+      };
+
+      for (const relation of userOnStudent) {
+        await this.prisma.notification.create({
+          data: {
+            userId: relation.userId,
+            title: 'Aistencia',
+            body: `El alumno ${relation.student.firstName} ${relation.student.lastName} ha sido marcado como ${statusTranslations[status]} el dia ${date}`,
+            link: `/students/${relation.studentId}/attendance`,
+          },
+        });
+      }
+    }
+
     return this.prisma.attendance.createMany({ data: attendances });
   }
 

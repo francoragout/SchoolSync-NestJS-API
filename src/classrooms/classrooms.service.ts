@@ -21,14 +21,47 @@ export class ClassroomsService {
       });
     }
 
+    const users = await this.prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'PRECEPTOR'] } },
+    });
+
+    const shiftTranslation = {
+      MORNING: 'Mañana',
+      AFTERNOON: 'Tarde',
+    };
+
+    const gradesTranslation = {
+      FIRST: 'Primero',
+      SECOND: 'Segundo',
+      THIRD: 'Tercero',
+      FOURTH: 'Cuarto',
+      FIFTH: 'Quinto',
+      SIXTH: 'Sexto',
+    };
+
+    for (const user of users) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Nueva Aula',
+          body: `Se ha agregado a ${gradesTranslation[grade]} ${division} ${shiftTranslation[shift]}`,
+          link: `/school/classrooms`,
+          userId: user.id,
+        },
+      });
+    }
+
     return this.prisma.classroom.create({ data: createClassroomDto });
+  }
+
+  createMultiple(createClassroomDtos: CreateClassroomDto[]) {
+    return this.prisma.classroom.createMany({ data: createClassroomDtos });
   }
 
   findAll() {
     return this.prisma.classroom.findMany({
       include: {
         _count: {
-          select: { students: true },
+          select: { students: true, exams: true },
         },
         user: true,
       },

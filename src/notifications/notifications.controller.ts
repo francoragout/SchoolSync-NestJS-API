@@ -35,6 +35,15 @@ export class NotificationsController {
     );
   }
 
+  @Get('user/:userId')
+  @ApiCreatedResponse({ type: CreateNotificationDto, isArray: true })
+  async findByUserId(@Param('userId') userId: string) {
+    const notifications = await this.notificationsService.findByUserId(userId);
+    return notifications.map(
+      (notification) => new NotificationEntity(notification),
+    );
+  }
+
   @Get(':id')
   @ApiOkResponse({ type: CreateNotificationDto })
   async findOne(@Param('id') id: string) {
@@ -50,6 +59,19 @@ export class NotificationsController {
     return new NotificationEntity(
       await this.notificationsService.update(id, updateNotificationDto),
     );
+  }
+
+  @Patch('user/:userId')
+  @ApiOkResponse({ type: CreateNotificationDto, isArray: true })
+  async updateMultipleByUserId(
+    @Param('userId') userId: string,
+    @Body() updateNotificationDto: UpdateNotificationDto,
+  ) {
+    const result = await this.notificationsService.updateMultipleByUserId(
+      userId,
+      updateNotificationDto,
+    );
+    return { count: result.count };
   }
 
   @Delete(':id')

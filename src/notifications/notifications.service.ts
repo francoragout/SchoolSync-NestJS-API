@@ -15,6 +15,12 @@ export class NotificationsService {
     return this.prisma.notification.findMany();
   }
 
+  findByUserId(userId: string) {
+    return this.prisma.notification.findMany({
+      where: { userId },
+    });
+  }
+
   findOne(id: string) {
     return this.prisma.notification.findUnique({
       where: { id },
@@ -28,6 +34,19 @@ export class NotificationsService {
     return this.prisma.notification.update({
       where: { id },
       data: updateNotificationDto,
+    });
+  }
+
+  updateMultipleByUserId(
+    userId: string,
+    updateNotificationDto: UpdateNotificationDto,
+  ) {
+    return this.prisma.notification.updateMany({
+      where: { userId },
+      data: {
+        ...updateNotificationDto,
+        read: true,
+      },
     });
   }
 

@@ -27,6 +27,14 @@ export class ClassroomsController {
     );
   }
 
+  @Post('multiple')
+  @ApiCreatedResponse({ type: CreateClassroomDto, isArray: true })
+  async createMultiple(@Body() createClassroomDtos: CreateClassroomDto[]) {
+    const createdClassrooms =
+      await this.classroomsService.createMultiple(createClassroomDtos);
+    return createdClassrooms.count;
+  }
+
   @Get()
   @ApiCreatedResponse({ type: CreateClassroomDto, isArray: true })
   async findAll() {

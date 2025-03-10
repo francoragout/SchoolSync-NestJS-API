@@ -13,6 +13,9 @@ export class NotificationEntity implements Notification {
   body: string;
 
   @ApiProperty()
+  link: string;
+
+  @ApiProperty()
   read: boolean;
 
   @ApiProperty()
@@ -21,8 +24,8 @@ export class NotificationEntity implements Notification {
   @ApiProperty()
   updatedAt: Date;
 
-  @ApiProperty({ required: false, nullable: true })
-  userId: string | null;
+  @ApiProperty()
+  userId: string;
 
   @ApiProperty({ required: false, type: UserEntity })
   user?: UserEntity;

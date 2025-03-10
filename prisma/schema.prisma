@@ -100,7 +100,7 @@ model Exam {
   id          String    @id @default(cuid())
   subject     Subjet
   date        DateTime
-  time        String?
+  time        String
   note        String?
   classroomId String
   classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
@@ -111,6 +111,7 @@ model Notification {
   userId    String
   title     String
   body      String
+  link      String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -128,7 +129,6 @@ enum Grade {
 enum Role {
   ADMIN
   PRECEPTOR
-  PROFESSOR
   TUTOR
 }
 

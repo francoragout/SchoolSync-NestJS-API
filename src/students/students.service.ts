@@ -7,8 +7,27 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class StudentsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createStudentDto: CreateStudentDto) {
-    return this.prisma.student.create({ data: createStudentDto });
+  async create(createStudentDto: CreateStudentDto) {
+    const student = await this.prisma.student.create({
+      data: createStudentDto,
+    });
+
+    const users = await this.prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'PRECEPTOR'] } },
+    });
+
+    for (const user of users) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Nuevo Estudiante',
+          body: `Se ha agregado a ${student.firstName} ${student.lastName}`,
+          link: `/school/classrooms/${student.classroomId}/students`,
+          userId: user.id,
+        },
+      });
+    }
+
+    return student;
   }
 
   findAll() {
@@ -50,7 +69,6 @@ export class StudentsService {
       },
     });
   }
-  
 
   update(id: string, updateStudentDto: UpdateStudentDto) {
     return this.prisma.student.update({

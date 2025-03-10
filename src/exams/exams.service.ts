@@ -7,7 +7,44 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ExamsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createExamDto: CreateExamDto) {
+  async create(createExamDto: CreateExamDto) {
+    const students = await this.prisma.student.findMany({
+      where: { classroomId: createExamDto.classroomId },
+    });
+
+    const examDate = new Date(createExamDto.date).toLocaleDateString();
+
+    for (const student of students) {
+      const userOnStudents = await this.prisma.userOnStudent.findMany({
+        where: { studentId: student.id },
+        include: { user: true },
+      });
+
+      const subjetTranslation = {
+        MATH: 'Matemáticas',
+        LITERATURE: 'Literatura',
+        HISTORY: 'Historia',
+        GEOGRAPHY: 'Geografía',
+        BIOLOGY: 'Biología',
+        PHYSICS: 'Física',
+        CHEMISTRY: 'Química',
+        ENGLISH: 'Inglés',
+        PHYSICAL_EDUCATION: 'Educación Física',
+        RELIGION: 'Religión',
+      };
+
+      for (const userOnStudent of userOnStudents) {
+        await this.prisma.notification.create({
+          data: {
+            userId: userOnStudent.user.id,
+            title: 'Examen',
+            body: `El alumno ${student.firstName} ${student.lastName} tiene un examen de ${subjetTranslation[createExamDto.subject]} el dia ${examDate}`,
+            link: `/students/${student.id}/exams`,
+          },
+        });
+      }
+    }
+
     return this.prisma.exam.create({ data: createExamDto });
   }
 
