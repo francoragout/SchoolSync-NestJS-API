@@ -42,6 +42,13 @@ export class ClassroomsController {
     return classrooms.map((classroom) => new ClassroomEntity(classroom));
   }
 
+  @Get('user/:userId')
+  @ApiCreatedResponse({ type: CreateClassroomDto, isArray: true })
+  async findByUserId(@Param('userId') userId: string) {
+    const classrooms = await this.classroomsService.findByUserId(userId);
+    return classrooms.map((classroom) => new ClassroomEntity(classroom));
+  }
+
   @Get(':id')
   @ApiOkResponse({ type: CreateClassroomDto })
   async findOne(@Param('id') id: string) {

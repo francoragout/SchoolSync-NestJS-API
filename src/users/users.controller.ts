@@ -17,6 +17,7 @@ import { RemoveMultipleUsersDto } from './dto/remove-multiple-users.dto';
 import { CreateUserOnStudentDto } from './dto/create-user-on-student.dto';
 import { UserOnStudentEntity } from './entities/user-on-student.entity';
 import { RemoveUserOnStudentDto } from './dto/remove-user-on-student.dto';
+import { StudentEntity } from 'src/students/entities/student.entity';
 
 @Controller('users')
 @ApiTags('users')
@@ -69,6 +70,14 @@ export class UsersController {
   @ApiOkResponse({ type: UserEntity })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return new UserEntity(await this.usersService.update(id, updateUserDto));
+  }
+
+  @Get('user/:userId')
+  async findStudentsByUserId(@Param('userId') userId: string) {
+    const userOnStudent = await this.usersService.findStudentByUserId(userId);
+    return userOnStudent.map(
+      (userOnStudent) => new StudentEntity(userOnStudent.student),
+    );
   }
 
   @Delete('student')

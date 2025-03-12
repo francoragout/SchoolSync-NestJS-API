@@ -4,7 +4,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ClassroomsModule } from './classrooms/classrooms.module';
 import { StudentsModule } from './students/students.module';
 import { AttendanceModule } from './attendance/attendance.module';
-import { UserOnStudentModule } from './user-on-student/user-on-student.module';
 import { ExamsModule } from './exams/exams.module';
 @Module({
   imports: [
@@ -13,7 +12,6 @@ import { ExamsModule } from './exams/exams.module';
     ClassroomsModule,
     StudentsModule,
     AttendanceModule,
-    UserOnStudentModule,
     ExamsModule,
   ],
   controllers: [],

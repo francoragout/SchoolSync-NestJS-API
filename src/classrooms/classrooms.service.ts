@@ -9,27 +9,12 @@ export class ClassroomsService {
 
   async create(createClassroomDto: CreateClassroomDto) {
     const { grade, division, shift } = createClassroomDto;
-
-    const existingClassroom = await this.prisma.classroom.findFirst({
-      where: { grade, division, shift },
-    });
-
-    if (existingClassroom) {
-      throw new ConflictException({
-        status: 'exists',
-        message: 'Ya existe un aula con los mismos datos',
-      });
-    }
-
-    const users = await this.prisma.user.findMany({
-      where: { role: { in: ['ADMIN', 'PRECEPTOR'] } },
-    });
-
+    
     const shiftTranslation = {
       MORNING: 'Mañana',
       AFTERNOON: 'Tarde',
     };
-
+  
     const gradesTranslation = {
       FIRST: 'Primero',
       SECOND: 'Segundo',
@@ -38,14 +23,25 @@ export class ClassroomsService {
       FIFTH: 'Quinto',
       SIXTH: 'Sexto',
     };
+    
+    const existingClassroom = await this.prisma.classroom.findFirst({
+      where: { grade, division, shift },
+    });
+    
+    if (existingClassroom) {
+      throw new ConflictException({
+        status: 'exists',
+        message: 'Ya existe un aula con los mismos datos',
+      });
+    }
 
-    for (const user of users) {
+    if (createClassroomDto.userId) {
       await this.prisma.notification.create({
         data: {
-          title: 'Nueva Aula',
-          body: `Se ha agregado a ${gradesTranslation[grade]} ${division} ${shiftTranslation[shift]}`,
+          title: 'Has sido asignado a un aula',
+          body: `${gradesTranslation[grade]} ${division} ${shiftTranslation[shift]}`,
           link: `/school/classrooms`,
-          userId: user.id,
+          userId: createClassroomDto.userId,
         },
       });
     }
@@ -68,6 +64,18 @@ export class ClassroomsService {
     });
   }
 
+  findByUserId(userId: string) {
+    return this.prisma.classroom.findMany({
+      where: { userId },
+      include: {
+        _count: {
+          select: { students: true, exams: true },
+        },
+        user: true,
+      },
+    });
+  }
+
   findOne(id: string) {
     return this.prisma.classroom.findUnique({
       where: { id },
@@ -77,6 +85,20 @@ export class ClassroomsService {
   async update(id: string, updateClassroomDto: UpdateClassroomDto) {
     const { grade, division, shift } = updateClassroomDto;
 
+    const shiftTranslation = {
+      MORNING: 'Mañana',
+      AFTERNOON: 'Tarde',
+    };
+  
+    const gradesTranslation = {
+      FIRST: 'Primero',
+      SECOND: 'Segundo',
+      THIRD: 'Tercero',
+      FOURTH: 'Cuarto',
+      FIFTH: 'Quinto',
+      SIXTH: 'Sexto',
+    };
+
     const existingClassroom = await this.prisma.classroom.findFirst({
       where: { grade, division, shift, NOT: { id } },
     });
@@ -85,6 +107,17 @@ export class ClassroomsService {
       throw new ConflictException({
         status: 'exists',
         message: 'Ya existe un aula con los mismos datos',
+      });
+    }
+
+    if (updateClassroomDto.userId) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Has sido asignado a un aula',
+          body: `${gradesTranslation[grade]} ${division} ${shiftTranslation[shift]}`,
+          link: `/school/classrooms`,
+          userId: updateClassroomDto.userId,
+        },
       });
     }
 

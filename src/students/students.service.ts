@@ -12,17 +12,18 @@ export class StudentsService {
       data: createStudentDto,
     });
 
-    const users = await this.prisma.user.findMany({
-      where: { role: { in: ['ADMIN', 'PRECEPTOR'] } },
+    const classroom = await this.prisma.classroom.findUnique({
+      where: { id: student.classroomId },
+      select: { userId: true },
     });
 
-    for (const user of users) {
+    if (classroom.userId) {
       await this.prisma.notification.create({
         data: {
-          title: 'Nuevo Estudiante',
+          title: 'Nuevo Alumno',
           body: `Se ha agregado a ${student.firstName} ${student.lastName}`,
           link: `/school/classrooms/${student.classroomId}/students`,
-          userId: user.id,
+          userId: classroom.userId,
         },
       });
     }
