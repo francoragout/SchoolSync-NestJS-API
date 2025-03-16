@@ -27,13 +27,6 @@ export class StudentsController {
     );
   }
 
-  @Get()
-  @ApiOkResponse({ type: CreateStudentDto, isArray: true })
-  async findAll() {
-    const students = await this.studentsService.findAll();
-    return students.map((student) => new StudentEntity(student));
-  }
-
   @Get('classroom/:classroomId')
   @ApiOkResponse({ type: CreateStudentDto, isArray: true })
   async findByClassroomId(@Param('classroomId') classroomId: string) {
@@ -63,12 +56,6 @@ export class StudentsController {
     return new StudentEntity(
       await this.studentsService.update(id, updateStudentDto),
     );
-  }
-
-  @Delete(':id')
-  @ApiOkResponse({ type: CreateStudentDto })
-  async remove(@Param('id') id: string) {
-    return new StudentEntity(await this.studentsService.remove(id));
   }
 
   @Delete()

@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Subjet } from '@prisma/client';
+import { Subject } from '@prisma/client';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateExamDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  subject: Subjet;
+  subject: Subject;
 
   @IsNotEmpty()
   @ApiProperty()

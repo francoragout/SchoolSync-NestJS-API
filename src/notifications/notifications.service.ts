@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class NotificationsService {
@@ -11,29 +12,9 @@ export class NotificationsService {
     return this.prisma.notification.create({ data: createNotificationDto });
   }
 
-  findAll() {
-    return this.prisma.notification.findMany();
-  }
-
   findByUserId(userId: string) {
     return this.prisma.notification.findMany({
       where: { userId },
-    });
-  }
-
-  findOne(id: string) {
-    return this.prisma.notification.findUnique({
-      where: { id },
-      include: {
-        user: true,
-      },
-    });
-  }
-
-  update(id: string, updateNotificationDto: UpdateNotificationDto) {
-    return this.prisma.notification.update({
-      where: { id },
-      data: updateNotificationDto,
     });
   }
 
@@ -50,7 +31,18 @@ export class NotificationsService {
     });
   }
 
-  remove(id: string) {
-    return this.prisma.notification.delete({ where: { id } });
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async handleCron() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    await this.prisma.notification.deleteMany({
+      where: {
+        read: true,
+        updatedAt: {
+          lt: sevenDaysAgo,
+        },
+      },
+    });
   }
 }

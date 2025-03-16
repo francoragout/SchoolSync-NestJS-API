@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exam, Subjet } from '@prisma/client';
+import { Exam, Subject } from '@prisma/client';
 import { ClassroomEntity } from 'src/classrooms/entities/classroom.entity';
 
 export class ExamEntity implements Exam {
@@ -7,7 +7,7 @@ export class ExamEntity implements Exam {
   id: string;
 
   @ApiProperty()
-  subject: Subjet;
+  subject: Subject;
 
   @ApiProperty()
   date: Date;

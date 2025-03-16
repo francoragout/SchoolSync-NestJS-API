@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ExamsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notification: NotificationsService,
+  ) {}
 
   async create(createExamDto: CreateExamDto) {
     const students = await this.prisma.student.findMany({
@@ -20,7 +24,7 @@ export class ExamsService {
         include: { user: true },
       });
 
-      const subjetTranslation = {
+      const subjectTranslation = {
         MATH: 'Matemáticas',
         LITERATURE: 'Literatura',
         HISTORY: 'Historia',
@@ -34,22 +38,16 @@ export class ExamsService {
       };
 
       for (const userOnStudent of userOnStudents) {
-        await this.prisma.notification.create({
-          data: {
-            userId: userOnStudent.user.id,
-            title: 'Examen',
-            body: `El alumno ${student.firstName} ${student.lastName} tiene un examen de ${subjetTranslation[createExamDto.subject]} el dia ${examDate}`,
-            link: `/students/${student.id}/exams`,
-          },
+        await this.notification.create({
+          userId: userOnStudent.user.id,
+          title: 'Examen',
+          body: `El alumno ${student.firstName} ${student.lastName} tiene un examen de ${subjectTranslation[createExamDto.subject]} el dia ${examDate}`,
+          link: `/students/${student.id}/exams`,
         });
       }
     }
 
     return this.prisma.exam.create({ data: createExamDto });
-  }
-
-  findAll() {
-    return this.prisma.exam.findMany();
   }
 
   async findByStudentId(studentId: string) {
@@ -80,10 +78,6 @@ export class ExamsService {
       where: { id },
       data: updateExamDto,
     });
-  }
-
-  remove(id: string) {
-    return this.prisma.exam.delete({ where: { id } });
   }
 
   removeMultiple(ids: string[]) {

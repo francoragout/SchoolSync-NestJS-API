@@ -25,13 +25,6 @@ export class ExamsController {
     return this.examsService.create(createExamDto);
   }
 
-  @Get()
-  @ApiCreatedResponse({ type: CreateExamDto, isArray: true })
-  async findAll() {
-    const exams = await this.examsService.findAll();
-    return exams.map((exam) => new ExamEntity(exam));
-  }
-
   @Get('student/:studentId')
   @ApiCreatedResponse({ type: CreateExamDto, isArray: true })
   async findByStudentId(@Param('studentId') studentId: string) {
@@ -64,11 +57,5 @@ export class ExamsController {
     const { ids } = removeMultipleExamDto;
     const deletedExams = await this.examsService.removeMultiple(ids);
     return deletedExams.count;
-  }
-
-  @Delete(':id')
-  @ApiOkResponse({ type: CreateExamDto })
-  async remove(@Param('id') id: string) {
-    return new ExamEntity(await this.examsService.remove(id));
   }
 }

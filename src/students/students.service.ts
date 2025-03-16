@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class StudentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notification: NotificationsService,
+  ) {}
 
   async create(createStudentDto: CreateStudentDto) {
     const student = await this.prisma.student.create({
@@ -18,25 +22,15 @@ export class StudentsService {
     });
 
     if (classroom.userId) {
-      await this.prisma.notification.create({
-        data: {
-          title: 'Nuevo Alumno',
-          body: `Se ha agregado a ${student.firstName} ${student.lastName}`,
-          link: `/school/classrooms/${student.classroomId}/students`,
-          userId: classroom.userId,
-        },
+      await this.notification.create({
+        title: 'Nuevo Alumno',
+        body: `Se ha agregado a ${student.firstName} ${student.lastName}`,
+        link: `/school/classrooms/${student.classroomId}/students`,
+        userId: classroom.userId,
       });
     }
 
     return student;
-  }
-
-  findAll() {
-    return this.prisma.student.findMany({
-      include: {
-        attendance: true,
-      },
-    });
   }
 
   findByClassroomId(classroomId: string) {
@@ -64,7 +58,8 @@ export class StudentsService {
       include: {
         student: {
           include: {
-            classroom: true, // Esto incluirá todos los detalles de la clase
+            classroom: true,
+            attendance: true,
           },
         },
       },
@@ -76,10 +71,6 @@ export class StudentsService {
       where: { id },
       data: updateStudentDto,
     });
-  }
-
-  remove(id: string) {
-    return this.prisma.student.delete({ where: { id } });
   }
 
   removeMultiple(ids: string[]) {

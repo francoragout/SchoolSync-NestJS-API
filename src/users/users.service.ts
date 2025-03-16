@@ -1,17 +1,26 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserOnStudentDto } from './dto/create-user-on-student.dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notification: NotificationsService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { email } = createUserDto;
+    const { email, role, firstName, lastName } = createUserDto;
 
-    const existingEmail = await this.prisma.user.findFirst({
+    // Verificar si el email ya existe
+    const existingEmail = await this.prisma.user.findUnique({
       where: { email },
     });
 
@@ -22,63 +31,76 @@ export class UsersService {
       });
     }
 
+    // Crear usuario
     const user = await this.prisma.user.create({ data: createUserDto });
 
+    // Buscar preceptores
     const preceptors = await this.prisma.user.findMany({
       where: { role: 'PRECEPTOR' },
     });
 
-    const roleTranslation = {
+    // Mapeo de roles
+    const roleTranslation: Record<string, string> = {
       ADMIN: 'Administrador',
       PRECEPTOR: 'Preceptor',
     };
 
-    const notificationLink =
-      createUserDto.role === 'ADMIN' ? '/admins' : '/preceptors';
+    const notificationLink = role === 'ADMIN' ? 'admins' : 'preceptors';
 
-    for (const preceptor of preceptors) {
-      await this.prisma.notification.create({
-        data: {
-          title: `Nuevo ${roleTranslation[createUserDto.role]}`,
-          body: `Se ha agregado a ${createUserDto.firstName} ${createUserDto.lastName}`,
+    // Crear notificaciones en paralelo
+    await Promise.all(
+      preceptors.map((preceptor) =>
+        this.notification.create({
+          title: `Nuevo ${roleTranslation[role]}`,
+          body: `Se ha agregado a ${firstName} ${lastName}`,
           userId: preceptor.id,
           link: `/school/${notificationLink}`,
-        },
-      });
-    }
+        }),
+      ),
+    );
 
     return user;
   }
 
   async createUserOnStudent(createUserOnStudent: CreateUserOnStudentDto) {
-    const { studentId, ...createUserDto } = createUserOnStudent;
-    const { email } = createUserDto;
+    const { studentId, email, firstName, lastName, role } = createUserOnStudent;
 
     let user = await this.prisma.user.findFirst({
       where: { email },
     });
 
     if (!user) {
-      user = await this.prisma.user.create({ data: createUserDto });
+      user = await this.prisma.user.create({
+        data: { email, firstName, lastName, role },
+      });
 
+      // Buscar el estudiante y su aula
       const student = await this.prisma.student.findUnique({
         where: { id: studentId },
         select: { classroomId: true },
       });
 
+      if (!student) {
+        throw new NotFoundException('El estudiante no existe');
+      }
+
+      // Buscar el preceptor de la clase
       const classroom = await this.prisma.classroom.findUnique({
         where: { id: student.classroomId },
         select: { userId: true },
       });
 
-      await this.prisma.notification.create({
-        data: {
-          title: 'Nuevo Tutor',
-          body: `Se ha agregado a ${createUserDto.firstName} ${createUserDto.lastName}`,
-          userId: classroom.userId,
-          link: `/school/classrooms/${student.classroomId}/students/${studentId}/tutors`,
-        },
-      });
+      // Validar si existe userId antes de crear la notificación
+      if (classroom?.userId) {
+        await this.prisma.notification.create({
+          data: {
+            title: 'Nuevo Tutor',
+            body: `Se ha agregado a ${firstName} ${lastName}`,
+            userId: classroom.userId,
+            link: `/school/classrooms/${student.classroomId}/students/${studentId}/tutors`,
+          },
+        });
+      }
     }
 
     return this.prisma.userOnStudent.create({
@@ -136,27 +158,30 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const { email } = updateUserDto;
-    const existingEmail = await this.prisma.user.findFirst({
-      where: { email, NOT: { id } },
-    });
 
-    if (existingEmail) {
-      throw new ConflictException({
-        status: 'exists',
-        message: 'Ya existe un usuario con el mismo email',
+    if (email) {
+      const existingEmail = await this.prisma.user.findFirst({
+        where: { email, NOT: { id } },
       });
-    }
 
-    const accounts = await this.prisma.account.findMany({
-      where: { userId: id },
-    });
+      if (existingEmail) {
+        throw new ConflictException({
+          status: 'exists',
+          message: 'Ya existe un usuario con el mismo email',
+        });
+      }
 
-    if (accounts.length > 0) {
-      throw new ConflictException({
-        status: 'update',
-        message:
-          'No se puede modificar el email de un usuario con cuentas asociadas',
+      const hasAccounts = await this.prisma.account.findFirst({
+        where: { userId: id },
       });
+
+      if (hasAccounts) {
+        throw new ConflictException({
+          status: 'update',
+          message:
+            'No se puede modificar el email de un usuario con cuentas asociadas',
+        });
+      }
     }
 
     return this.prisma.user.update({
@@ -173,16 +198,19 @@ export class UsersService {
       },
     });
 
-    for (const id of ids) {
-      const remainingRelations = await this.prisma.userOnStudent.count({
-        where: { userId: id },
-      });
+    // Encuentra los usuarios que ya no tienen relaciones en userOnStudent
+    const usersWithoutRelations = await this.prisma.user.findMany({
+      where: {
+        id: { in: ids },
+        students: { none: {} },
+      },
+      select: { id: true },
+    });
 
-      if (remainingRelations === 0) {
-        await this.prisma.user.delete({
-          where: { id },
-        });
-      }
+    if (usersWithoutRelations.length > 0) {
+      await this.prisma.user.deleteMany({
+        where: { id: { in: usersWithoutRelations.map((user) => user.id) } },
+      });
     }
 
     return deleteResult;

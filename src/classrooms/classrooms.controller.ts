@@ -27,14 +27,6 @@ export class ClassroomsController {
     );
   }
 
-  @Post('multiple')
-  @ApiCreatedResponse({ type: CreateClassroomDto, isArray: true })
-  async createMultiple(@Body() createClassroomDtos: CreateClassroomDto[]) {
-    const createdClassrooms =
-      await this.classroomsService.createMultiple(createClassroomDtos);
-    return createdClassrooms.count;
-  }
-
   @Get()
   @ApiCreatedResponse({ type: CreateClassroomDto, isArray: true })
   async findAll() {
@@ -64,12 +56,6 @@ export class ClassroomsController {
     return new ClassroomEntity(
       await this.classroomsService.update(id, updateClassroomDto),
     );
-  }
-
-  @Delete(':id')
-  @ApiOkResponse({ type: CreateClassroomDto })
-  async remove(@Param('id') id: string) {
-    return new ClassroomEntity(await this.classroomsService.remove(id));
   }
 
   @Delete()
